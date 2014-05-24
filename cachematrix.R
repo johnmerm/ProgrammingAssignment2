@@ -4,33 +4,46 @@
 ## Write a short comment describing this function
 
 makeCacheMatrix <- function(x = matrix()) {
-  x <- NULL
-  set <- function(y){
-    x <<- y
-    i <<- NULL
+	#initialize i (the inverse matrix to null)
+  	i <- NULL
+  	set <- function(y){
+		#set shall put y into x and (re)set i to NULL
+    	x <<- y
+    	i <<- NULL
+  	}
+  	
+	#getter for Matrix :retun x
+  	get <- function() x
+  	getInverse <- function() {
+		#Lazy init inverse: If i exists return else calculate
+		#must use  the <<- operator since i is in upper scope
+		
+	   	if (is.null(i)){
+			message("inverting matrix")
+	    	i <<- solve(x)
+	    }
+	    return(i)
   }
-  
-  get <- function() x
-  getInverse <- function() {
-    if (!is.null(i)){
-      message("using cached inverse")
-    }else{
-      i <- solve(x)
-    }
-    return(i)
-  }
-  list(set=set,get=get,getInverse=getInverse)
+  return(list(set=set,get=get,getInverse=getInverse))
 }
 
 
 ## Write a short comment describing this function
 
-cacheSolve <- function(x, b1,b2) {
-  ## Return a matrix that is the inverse of 'x'
-  mm <-makeCacheMatrix(x)
-  s1 = mm$getInverse()*b1
-  s2 = mm$getInverse()*b2
+cacheSolve <- function(A,b) {
+  ## create cached matrix
+  Ac <-makeCacheMatrix(A)
   
-  return (c(s1,s2))
+  #solving for x means multiplying A inverse with b
+  # matrix - vector mult is done by the %*% operator	
+  x <- Ac$getInverse() %*% b
+  return (x)
   
 }
+
+#some test code to check that everything works
+# A is a rotation matrix (rotate axes by pi/8)
+A = rbind(c(cos(pi/8),-sin(pi/8)),c(sin(pi/8),cos(pi/8)))
+b = c(4,0)
+
+x <- cacheSolve(A,b)
